@@ -29,6 +29,7 @@ reload(palette)
 
 from assetbox.base.assets import Location, Asset
 from assetbox.base import helpers
+from assetbox.base import prefs
 
 PROJECTS_FOLDER = 'G:/'
 PUBLISH_FOLDER = 'published'
@@ -48,6 +49,10 @@ class AssetBoxWindow(QtGui.QMainWindow):
         super(AssetBoxWindow, self).__init__(parent)
         self.setWindowTitle("VFX AssetBox")
         self.resize(700, 500)
+
+        # Setup the preferences.
+        self.preferences = prefs.PreferenceHelper()
+        self.preferences.load_config()
 
         self.setWindowIcon(QtGui.QIcon('G:/Scripts/vfxAssetBox/icons/icon.32x32.png'))
 
@@ -342,3 +347,7 @@ class AssetBoxWindow(QtGui.QMainWindow):
         m = 3
         layout.setContentsMargins(m, m, m, m)
         layout.setAlignment(QtCore.Qt.AlignTop)
+
+    def closeEvent(self, event):
+        self.preferences.config.set('ui', 'view_mode', 'list')
+        self.preferences.save_config()
