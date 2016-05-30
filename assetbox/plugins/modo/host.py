@@ -9,8 +9,8 @@ class HostApp(BaseHost):
     """
     The host application class, which is used to determine context.
     """
-    ID = 'Modo'
-    FILETYPES = ['abc']
+    id_ = 'Modo'
+    filetypes = ['abc']
 
     def get_host(self):
         """Return True if we are in Modo."""

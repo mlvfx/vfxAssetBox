@@ -1,4 +1,4 @@
-nuke actions
+Nuke Actions
 ============
 
 .. automodule:: assetbox.plugins.nuke.actions

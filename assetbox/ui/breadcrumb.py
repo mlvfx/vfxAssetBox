@@ -18,10 +18,10 @@ class QBreadcrumb(QtGui.QWidget):
         self.setVisible(False)
 
         # Set the palette
-        self.setAutoFillBackground(True)
-        p = self.palette()
-        p.setColor(self.backgroundRole(), QtGui.QColor(20, 20, 21))
-        self.setPalette(p)
+        # self.setAutoFillBackground(True)
+        # p = self.palette()
+        # p.setColor(self.backgroundRole(), QtGui.QColor(20, 20, 21))
+        # self.setPalette(p)
 
         # Set the margin
         m = 2

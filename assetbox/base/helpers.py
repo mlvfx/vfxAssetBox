@@ -75,19 +75,19 @@ def join_path(*args):
     return os.path.join(*args).replace("\\", "/")
 
 
-def search_id(search_dict, id):
+def search_id(search_dict, uid):
     """
     | Search in a dictionary if the dict values ID attribute matches
     | the passed id.
 
     Args:
         search_dict (dict): the dict to search.
-        id (str): id to query.
+        uid (str): unique id to query.
 
     Returns:
         str: return the found key from the dict.
     """
     for key, value in search_dict.items():
         for v in value:
-            if id in v.ID:
+            if uid in v.id_:
                 return key

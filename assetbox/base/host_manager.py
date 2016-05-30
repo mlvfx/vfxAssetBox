@@ -42,9 +42,9 @@ class HostManager(object):
                 host = imp.load_source(name, host_path)
                 host_app = host.HostApp()
 
-                if host_app.INHOST:
+                if host_app.inhost:
                     self.host_app = host_app
-                    self.host_filetypes = self.host_app.FILETYPES
+                    self.host_filetypes = self.host_app.filetypes
 
                     try:
                         action_path = os.path.join(p, 'actions.py').replace('\\', '/')
@@ -63,7 +63,6 @@ class HostManager(object):
     def get_hostapp(self):
         """Return the host application."""
         if not self.host_app:
-            print 'ran this'
             self.host_app = BaseHost()
         return self.host_app
 

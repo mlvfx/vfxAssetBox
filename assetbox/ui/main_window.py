@@ -20,6 +20,8 @@ from PySide import QtGui
 # reload(contact_sheet)
 
 from assetbox.ui import breadcrumb
+from assetbox.ui.panels import path_line, asset_list
+import assetbox.ui.qthelpers as qthelpers
 reload(breadcrumb)
 
 from assetbox.base.constants import ActionType
@@ -41,9 +43,9 @@ LOGGER = logging.getLogger(__name__)
 
 
 class AssetBoxWindow(QtGui.QMainWindow):
-    HOST = None
-    ACTIONS = []
-    FILETYPES = []
+    host = None
+    actions = []
+    filetypes = []
 
     def __init__(self, parent=None):
         super(AssetBoxWindow, self).__init__(parent)
@@ -59,7 +61,7 @@ class AssetBoxWindow(QtGui.QMainWindow):
         # with open('G:/Scripts/vfxAssetManager/ui/style/darkorange.stylesheet', 'r') as file:
         #     style_sheet = file.read()
         # self.setStyleSheet(style_sheet)
-        palette.load_theme(self)
+        # palette.load_theme(self)
         # QtGui.QApplication.setStyle(QtGui.QStyleFactory.create('Gtk'))
 
         # Default values
@@ -71,7 +73,7 @@ class AssetBoxWindow(QtGui.QMainWindow):
         # Main layout widgets
         main_widget = QtGui.QWidget()
         self. main_layout = QtGui.QHBoxLayout()
-        self._clean_layouts(self.main_layout)
+        qthelpers.clean_layouts(self.main_layout)
         main_widget.setLayout(self.main_layout)
 
         # Set the main layout
@@ -89,30 +91,14 @@ class AssetBoxWindow(QtGui.QMainWindow):
         self.assets = self._asset_layout()
         self.breadcrumb = breadcrumb.QBreadcrumb(parent=self)
         self.assets.addWidget(self.breadcrumb)
-
-        self.list_addons = QtGui.QWidget()
-        self.list_addons_layout = QtGui.QHBoxLayout(self.list_addons)
-        self._clean_layouts(self.list_addons_layout)
-        self.assets.addWidget(self.list_addons)
-
-        self.list_addons_layout.addWidget(QtGui.QLabel('Assets:'))
-        self.search_lineedit = QtGui.QLineEdit('')
-        self.search_lineedit.setPlaceholderText('Search...')
-        self.search_lineedit.textChanged.connect(self._search_filter_results)
-        self.list_addons_layout.addWidget(self.search_lineedit)
-        self.horizontal_slider = QtGui.QSlider()
-        self.horizontal_slider.setMinimum(4)
-        self.horizontal_slider.setMaximum(18)
-        self.horizontal_slider.setValue(8)
-        self.horizontal_slider.setOrientation(QtCore.Qt.Horizontal)
-        self.horizontal_slider.valueChanged.connect(self._adjust_list_fontsize)
-        self.list_addons_layout.addWidget(self.horizontal_slider)
-        self.asset_list_widget = self._list_widget(parent=self.assets)
+        self.asset_list = asset_list.QAssetListWidget(parent=self.assets)
+        self.asset_list.list_widget().customContextMenuRequested.connect(self.selected_asset_rightclicked)
+        self.asset_list.list_widget().itemClicked.connect(self.selected_asset)
 
         # self.texture_widget = contact_sheet.QdContactSheet()
         # self.assets.addWidget(self.texture_widget)
         self.actionbuttons = self._buttons_widget(parent=self.assets)
-        self.path_layout = self._path_layout(parent=self.assets)
+        self.path_line = path_line.QPath(parent=self.assets)
 
         # Initial population
         self._populate_projects()
@@ -129,8 +115,7 @@ class AssetBoxWindow(QtGui.QMainWindow):
         Args:
             item(Asset): pass in an Asset object
         """
-        # print item.get_path()
-        self.path_line.setText(item.get_path())
+        self.path_line.set_text(item.get_path())
 
     def selected_asset_rightclicked(self, QPos):
         """
@@ -139,51 +124,52 @@ class AssetBoxWindow(QtGui.QMainWindow):
         Args:
             QPos(QPosition): location where the right click happened
         """
-        item = self.asset_list_widget.itemAt(QPos)
+        item = self.asset_list.list_widget().itemAt(QPos)
         if item is not None:
             if item.get_actions():
                 menu = QtGui.QMenu("Context Menu", self)
                 for action in item.get_actions():
-                    if action.ACTIONTYPE == ActionType.Menu:
+                    if action.actiontype == ActionType.Menu:
                         _partial = partial(self.rightclick_action_run,
                                            action,
                                            item.get_path())
-                        qaction = QtGui.QAction(action.NAME,
+                        qaction = QtGui.QAction(action.name,
                                                 self,
                                                 triggered=_partial)
                         menu.addAction(qaction)
-                menu.exec_(self.asset_list_widget.mapToGlobal(QPos))
+                menu.exec_(self.asset_list.list_widget().mapToGlobal(QPos))
 
     def rightclick_action_run(self, action, path):
         action.execute(path=path)
         # TODO: remove this hack to check for deletion
         time.sleep(2)  # wait till deletion is done
         if not os.path.isfile(path):
-            self.asset_list_widget.takeItem(self.asset_list_widget.currentRow())
+            self.asset_list.list_widget().takeItem(self.asset_list.list_widget().currentRow())
 
     def add_buttons(self):
-        valid_actions = [a for a in self.ACTIONS if a.ACTIONTYPE == 2]
+        valid_actions = [a for a in self.actions if a.actiontype == 2]
         for action in valid_actions:
-            button = QtGui.QPushButton(action.NAME)
+            button = QtGui.QPushButton(action.name)
             _partial = partial(self.get_path, action)
             button.clicked.connect(_partial)
             self.actionbuttons.addWidget(button)
 
     def get_path(self, action):
-        asset = action.execute(path=self.asset_list_widget.path)
+        asset = action.execute(path=self.asset_list.path())
         name = os.path.basename(asset)
         if os.path.isfile(asset):
             asset_obj = Asset(None, name, asset)
-            valid_actions = [a for a in self.ACTIONS if a.FILETYPE == asset_obj.FILETYPE]
+            valid_actions = [a for a in self.actions
+                             if a.filetype == asset_obj.filetype]
             asset_obj.add_actions(valid_actions)
 
-            self._add_item_to_listwidget(asset_obj)
-            self.asset_list_widget.scrollToItem(asset_obj)
-            # self.asset_list_widget.addItem(asset_obj)
+            self.asset_list.add_item(asset_obj)
+            self.asset_list.list_widget().scrollToItem(asset_obj)
 
     def get_projects(self, filepath):
         projects = os.listdir(filepath)
-        return [p for p in projects if not helpers.FolderHelper().is_hidden(helpers.join_path(filepath, p))]
+        return [p for p in projects
+                if not helpers.FolderHelper().is_hidden(helpers.join_path(filepath, p))]
 
     def _populate_projects(self):
         for p in self.get_projects(PROJECTS_FOLDER):
@@ -227,20 +213,20 @@ class AssetBoxWindow(QtGui.QMainWindow):
         item.setExpanded(True)
         self.breadcrumb._hide_all()
         self.breadcrumb.set_breadcrumb_label(item)
-        self.asset_list_widget.path = item.get_path()
+        self.asset_list.set_path(item.get_path())
 
-        self.asset_list_widget.clear()
-        self.path_line.setText(item.get_path())
+        self.asset_list.clear()
+        self.path_line.set_text(item.get_path())
 
-        for ft in self.FILETYPES:
+        for ft in self.filetypes:
             for asset in helpers.get_files(item.get_path(), pattern='*.%s' % ft):
                 name = os.path.basename(asset)
                 if os.path.isfile(asset):
                     asset_obj = Asset(None, name, asset)
-                    valid_actions = [a for a in self.ACTIONS if a.FILETYPE == asset_obj.FILETYPE]
+                    valid_actions = [a for a in self.actions if a.filetype == asset_obj.filetype]
                     asset_obj.add_actions(valid_actions)
 
-                    self._add_item_to_listwidget(asset_obj)
+                    self.asset_list.add_item(asset_obj)
 
         images = helpers.get_files(item.get_path(), pattern='*.png')
         images.sort()
@@ -267,7 +253,7 @@ class AssetBoxWindow(QtGui.QMainWindow):
     def _buttons_widget(self, parent):
         button_widget = QtGui.QWidget()
         button_vlayout = QtGui.QHBoxLayout(button_widget)
-        self._clean_layouts(button_vlayout)
+        qthelpers.clean_layouts(button_vlayout)
         parent.addWidget(button_widget)
 
         return button_vlayout
@@ -276,7 +262,7 @@ class AssetBoxWindow(QtGui.QMainWindow):
         variant_widget = QtGui.QWidget()
         variant_widget.setFixedWidth(200)
         variant_vlayout = QtGui.QVBoxLayout(variant_widget)
-        self._clean_layouts(variant_vlayout)
+        qthelpers.clean_layouts(variant_vlayout)
 
         # create_variant_button = QtGui.QPushButton('Create Variant')
 
@@ -287,66 +273,11 @@ class AssetBoxWindow(QtGui.QMainWindow):
     def _asset_layout(self):
         asset_widget = QtGui.QWidget()
         asset_layout = QtGui.QVBoxLayout(asset_widget)
-        self._clean_layouts(asset_layout)
+        qthelpers.clean_layouts(asset_layout)
 
         self.main_layout.addWidget(asset_widget)
 
         return asset_layout
-
-    def _path_layout(self, parent):
-        path_widget = QtGui.QWidget()
-        path_layout = QtGui.QHBoxLayout(path_widget)
-        self._clean_layouts(path_layout)
-
-        path_layout.addWidget(QtGui.QLabel('Path:'))
-        self.path_line = QtGui.QLineEdit('...')
-        self.path_line.setReadOnly(True)
-        path_layout.addWidget(self.path_line)
-
-        parent.addWidget(path_widget)
-
-        return path_layout
-
-    def _search_filter_results(self, text):
-        items = []
-        for index in xrange(self.asset_list_widget.count()):
-            items.append(self.asset_list_widget.item(index))
-
-        if not items:
-            return
-
-        for item in items:
-            if text in item.text():
-                item.setHidden(False)
-            else:
-                item.setHidden(True)
-
-    def _adjust_list_fontsize(self, value):
-        items = []
-        for index in xrange(self.asset_list_widget.count()):
-            items.append(self.asset_list_widget.item(index))
-
-        if not items:
-            return
-
-        family = items[0].font().family()
-
-        font = QtGui.QFont(family, value)
-        for item in items:
-            item.setFont(font)
-
-    def _add_item_to_listwidget(self, item):
-        family = item.font().family()
-        value = self.horizontal_slider.value()
-        font = QtGui.QFont(family, value)
-        item.setFont(font)
-
-        self.asset_list_widget.addItem(item)
-
-    def _clean_layouts(self, layout):
-        m = 3
-        layout.setContentsMargins(m, m, m, m)
-        layout.setAlignment(QtCore.Qt.AlignTop)
 
     def closeEvent(self, event):
         self.preferences.config.set('ui', 'view_mode', 'list')

@@ -8,8 +8,8 @@ import os
 class AbcImport(BaseAction):
     """Action to import an Alembic file."""
 
-    NAME = 'ABC Import'
-    FILETYPE = 'abc'
+    name = 'ABC Import'
+    filetype = 'abc'
 
     def execute(self, path, **kwargs):
         if self.valid_filetype(path):

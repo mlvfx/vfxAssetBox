@@ -10,8 +10,8 @@ class HostApp(BaseHost):
     """
     The host application class, which is used to determine context.
     """
-    ID = 'Clarisse'
-    FILETYPES = ['abc', 'png', 'tiff', 'vdb']
+    id_ = 'Clarisse'
+    filetypes = ['abc', 'png', 'tiff', 'vdb']
 
     def get_host(self):
         """Return True if we are in Clarisse."""

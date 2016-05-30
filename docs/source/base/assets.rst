@@ -1,4 +1,4 @@
-assets
+Assets
 ======
 
 .. automodule:: assetbox.base.assets

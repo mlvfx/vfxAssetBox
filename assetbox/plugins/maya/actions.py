@@ -8,8 +8,8 @@ import os
 class AbcImport(BaseAction):
     """Action to import an Alembic file."""
 
-    NAME = 'ABC Import'
-    FILETYPE = 'abc'
+    name = 'ABC Import'
+    filetype = 'abc'
 
     def execute(self, path, **kwargs):
         """Run the command."""
@@ -21,8 +21,8 @@ class AbcImport(BaseAction):
 class PngImport(BaseAction):
     """Action to import a png and create a Maya File node."""
 
-    NAME = 'PNG Import'
-    FILETYPE = 'png'
+    name = 'PNG Import'
+    filetype = 'png'
 
     def execute(self, path, **kwargs):
         """Run the command."""
@@ -34,9 +34,9 @@ class PngImport(BaseAction):
 class AbcExportStatic(BaseAction):
     """Exports an alembic file, based on frame 0."""
 
-    NAME = 'Alembic Static Export'
-    FILETYPE = 'abc'
-    ACTIONTYPE = 2
+    name = 'Alembic Static Export'
+    filetype = 'abc'
+    actiontype = 2
 
     @filename_input('Export Alembic', 'Output Path: ')
     def execute(self, path, **kwargs):
@@ -70,9 +70,9 @@ class AbcExportStatic(BaseAction):
 class AbcExport(BaseAction):
     """Exports an alembic file, based on the scene frame range."""
 
-    NAME = 'Alembic Export'
-    FILETYPE = 'abc'
-    ACTIONTYPE = 2
+    name = 'Alembic Export'
+    filetype = 'abc'
+    actiontype = 2
 
     @filename_input('Export Alembic', 'Output Path: ')
     def execute(self, path, **kwargs):

@@ -1,4 +1,4 @@
-helpers
+Helpers
 =======
 
 .. automodule:: assetbox.base.helpers

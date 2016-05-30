@@ -9,12 +9,12 @@ class BaseHost(object):
     """
     The host application class, which is used to determine context.
     """
-    ID = 'python'
-    INHOST = False
-    FILETYPES = ['abc']
+    id_ = 'python'
+    inhost = False
+    filetypes = ['abc']
 
     def __init__(self):
-        self.INHOST = self.get_host()
+        self.inhost = self.get_host()
 
     def get_host(self):
         """Return True if we are in a python interpreter."""

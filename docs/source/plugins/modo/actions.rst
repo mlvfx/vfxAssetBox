@@ -1,4 +1,4 @@
-modo actions
+Modo Actions
 ============
 
 .. automodule:: assetbox.plugins.modo.actions

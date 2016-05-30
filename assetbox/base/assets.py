@@ -9,7 +9,7 @@ import uuid
 class Location(QtGui.QTreeWidgetItem):
     """Location widget is used in the folder structure treewidget."""
 
-    ID = uuid.uuid4()
+    id_ = uuid.uuid4()
 
     def __init__(self, parent, name, path):
         """Initialise the class."""
@@ -38,8 +38,8 @@ class Location(QtGui.QTreeWidgetItem):
 class Asset(QtGui.QListWidgetItem):
     """Asset is the widget used to represent widgets."""
 
-    FILETYPE = None
-    ACTIONS = []
+    filetype = None
+    actions = []
 
     def __init__(self, parent, name, path):
         """Initialise the class."""
@@ -49,7 +49,7 @@ class Asset(QtGui.QListWidgetItem):
         self._path = path.replace("\\", "/")
 
         name, ext = os.path.splitext(self._path)
-        self.FILETYPE = ext.replace('.', '')
+        self.filetype = ext.replace('.', '')
 
     def get_name(self):
         """Return the name."""
@@ -61,8 +61,8 @@ class Asset(QtGui.QListWidgetItem):
 
     def get_actions(self):
         """Returns True if this is a file."""
-        return self.ACTIONS
+        return self.actions
 
     def add_actions(self, actions):
         """Returns True if this is a directory."""
-        self.ACTIONS = actions
+        self.actions = actions

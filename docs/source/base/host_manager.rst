@@ -1,4 +1,4 @@
-host_manager
+Host Manager
 ============
 
 .. automodule:: assetbox.base.host_manager

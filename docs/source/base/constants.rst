@@ -1,4 +1,4 @@
-constants
+Constants
 =========
 
 .. automodule:: assetbox.base.constants

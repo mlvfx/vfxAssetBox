@@ -9,8 +9,8 @@ class HostApp(BaseHost):
     """
     The host application class, which is used to determine context.
     """
-    ID = 'Houdini'
-    FILETYPES = ['abc']
+    id_ = 'Houdini'
+    filetypes = ['abc']
 
     def get_host(self):
         """Return True if we are in Houdini."""

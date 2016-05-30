@@ -1,4 +1,4 @@
-houdini actions
+Houdini Actions
 ===============
 
 .. automodule:: assetbox.plugins.houdini.actions

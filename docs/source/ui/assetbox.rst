@@ -1,4 +1,4 @@
-assetbox
+Assetbox
 ========
 
 .. automodule:: assetbox.ui.main_window

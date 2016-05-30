@@ -8,8 +8,8 @@ import os
 class AbcImport(BaseAction):
     """Action to import an Alembic file."""
 
-    NAME = 'ABC Import'
-    FILETYPE = 'abc'
+    name = 'ABC Import'
+    filetype = 'abc'
 
     def execute(self, path, **kwargs):
         if self.valid_filetype(path):
@@ -20,8 +20,8 @@ class AbcImport(BaseAction):
 class PngImport(BaseAction):
     """Action to import a png and create a TextureMapFile."""
 
-    NAME = 'PNG Import'
-    FILETYPE = 'png'
+    name = 'PNG Import'
+    filetype = 'png'
 
     def execute(self, path, **kwargs):
         if self.valid_filetype(path):
@@ -35,8 +35,8 @@ class PngImport(BaseAction):
 class VdbImport(BaseAction):
     """Action to import a volume vdb."""
 
-    NAME = 'VDB Import'
-    FILETYPE = 'vdb'
+    name = 'VDB Import'
+    filetype = 'vdb'
 
     def execute(self, path, **kwargs):
         if self.valid_filetype(path):

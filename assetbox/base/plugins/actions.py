@@ -56,9 +56,9 @@ def confirm_dialog(title='Confirm', message='Text:'):
 class BaseAction(object):
     """Base Action template, a skeleton for an action."""
 
-    NAME = 'BaseAction'
-    FILETYPE = 'abc'
-    ACTIONTYPE = ActionType.Menu
+    name = 'BaseAction'
+    filetype = 'abc'
+    actiontype = ActionType.Menu
 
     def __init__(self):
         pass
@@ -67,7 +67,7 @@ class BaseAction(object):
         """Check the asset selected is valid."""
         name, ext = os.path.splitext(path)
 
-        return ext.replace('.', '') == self.FILETYPE
+        return ext.replace('.', '') == self.filetype
 
     def execute(self):
         """Run the command."""
@@ -77,8 +77,8 @@ class BaseAction(object):
 class Delete(BaseAction):
     """Delete command that mimics the operating systems delete."""
 
-    NAME = 'Delete'
-    FILETYPE = 'abc'
+    name = 'Delete'
+    filetype = 'abc'
 
     @confirm_dialog('Confirm Deletion', 'Are you sure you want to delete this?')
     def execute(self, path, **kwargs):

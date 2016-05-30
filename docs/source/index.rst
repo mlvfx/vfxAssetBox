@@ -1,10 +1,11 @@
-.. vfxAssetBox documentation master file, created by
-   sphinx-quickstart on Wed May 11 23:10:52 2016.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+Vfx AssetBox - Documentation
+============================
 
-Welcome to vfxAssetBox's documentation!
-=======================================
+Welcome to AssetBox. AssetBox is a lightweight python based interface that can be opened in software supporting the PySide Qt framework, to export, store, and import assets such as 3d geometry, geometry caches, and textures. Essentially any kind of file format can be supported, and easily integrated by anyone with beginner python experience.
+
+This documentation lays out how assetbox can be used, and developed for. Check the developers reference section for information on assetboxs modules.
+
+The plugin section outlines the currently supported dcc applications, how to write new plugins, and how to build actions for them.
 
 Contents:
 
@@ -12,13 +13,9 @@ Contents:
    :maxdepth: 3
 
    ui/assetbox
-   base/assets
-   base/constants
-   base/helpers
-   base/host_manager
    plugins
-
-
+   developers_reference
+   
 Indices and tables
 ==================
 

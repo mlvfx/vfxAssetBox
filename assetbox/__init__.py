@@ -1,3 +1,3 @@
 """Expose launch command."""
 
-from assetbox.ui.launcher import launch
+from assetbox.launcher import launch

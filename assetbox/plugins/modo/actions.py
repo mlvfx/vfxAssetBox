@@ -10,8 +10,8 @@ class AbcImport(BaseAction):
     TODO: update to work properly in Modo.
     """
 
-    NAME = 'ABC Import'
-    FILETYPE = 'abc'
+    name = 'ABC Import'
+    filetype = 'abc'
 
     def execute(self, path, **kwargs):
         """Run the command."""
