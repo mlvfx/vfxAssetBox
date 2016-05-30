@@ -2,9 +2,12 @@
 Module to load, store, and modifying user preferences.
 """
 import ConfigParser
+import logging
 import os
 
 import assetbox.base.helpers as helpers
+
+LOGGER = logging.getLogger(__name__)
 
 
 class PreferenceHelper(object):
@@ -21,7 +24,7 @@ class PreferenceHelper(object):
         If a config does not exist, create one, otherwise return it.
 
         Returns:
-            str: path to the settings config.
+            str: Path to the settings config.
         """
         config_dir = os.path.dirname(__file__)
         # Get the parent folder.
@@ -30,15 +33,16 @@ class PreferenceHelper(object):
         cfg_files = helpers.get_files(config_dir, '*.cfg')
 
         if cfg_files:
-            for configfile in cfg_files:
-                if 'settings.cfg' in configfile:
-                    return configfile
+            for config_file in cfg_files:
+                if 'settings.cfg' in config_file:
+                    return config_file
 
         # Write the new config file.
-        with open('{0}/settings.cfg'.format(config_dir), 'wb') as configfile:
-            self.config.write(configfile)
+        config_file = '{0}/settings.cfg'.format(config_dir)
+        with open(config_file, 'wb') as config_path:
+            self.config.write(config_path)
 
-        return configfile
+        return config_file
 
     def load_config(self):
         """
@@ -47,7 +51,8 @@ class PreferenceHelper(object):
         Returns:
             ConfigParser: the parser class.
         """
-        self.config.read(self.get_config())
+        config_file = self.get_config()
+        self.config.read(config_file)
         return self.config
 
     def save_config(self):
@@ -55,9 +60,41 @@ class PreferenceHelper(object):
         Saves a config file, gets the path from get_config.
 
         Args:
-            ConfigParser: the parser class.
+            ConfigParser: The parser class.
         """
-        with open(self.get_config(), 'wb') as configfile:
+        config_file = self.get_config()
+        with open(config_file, 'wb') as configfile:
             self.config.write(configfile)
 
-        return self.config
+        return configfile
+
+    def get_attr(self, group, attr):
+        """
+        Return an attribute related to the project.
+
+        Args:
+            group (str): The group of attributes.
+            attr (str): The attribute to query.
+        """
+        if self.config:
+            try:
+                value = self.config.get(group, attr)
+                return value
+            except (ConfigParser.NoOptionError, ConfigParser.NoSectionError):
+                LOGGER.debug('{0} attribute or section not found.'.format(attr))
+            else:
+                return False
+
+    def set_attr(self, group, attr, value):
+        """
+        Set an attribute related to the project.
+
+        Args:
+            group (str): The group of attributes.
+            attr (str): The attribute to set.
+            value (str): The value to set.
+        """
+        if self.config:
+            self.config.set(group, attr, value)
+            configfile = self.save_config()
+            LOGGER.info('Saved config to: {0}'.format(configfile))

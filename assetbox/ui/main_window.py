@@ -20,6 +20,7 @@ from PySide import QtGui
 # reload(contact_sheet)
 
 from assetbox.ui import breadcrumb
+from assetbox.ui.widgets import menubar
 from assetbox.ui.panels import path_line, asset_list
 import assetbox.ui.qthelpers as qthelpers
 reload(breadcrumb)
@@ -33,8 +34,6 @@ from assetbox.base.assets import Location, Asset
 from assetbox.base import helpers
 from assetbox.base import prefs
 
-PROJECTS_FOLDER = 'G:/'
-PUBLISH_FOLDER = 'published'
 DEFAULT_PROJECT = 'EelCreek'
 
 import logging
@@ -52,10 +51,6 @@ class AssetBoxWindow(QtGui.QMainWindow):
         self.setWindowTitle("VFX AssetBox")
         self.resize(700, 500)
 
-        # Setup the preferences.
-        self.preferences = prefs.PreferenceHelper()
-        self.preferences.load_config()
-
         self.setWindowIcon(QtGui.QIcon('G:/Scripts/vfxAssetBox/icons/icon.32x32.png'))
 
         # with open('G:/Scripts/vfxAssetManager/ui/style/darkorange.stylesheet', 'r') as file:
@@ -64,22 +59,34 @@ class AssetBoxWindow(QtGui.QMainWindow):
         # palette.load_theme(self)
         # QtGui.QApplication.setStyle(QtGui.QStyleFactory.create('Gtk'))
 
-        # Default values
+        # Default values.
         self.current_locations = {'project': '', 'project_folder': '',
-                                  'project_pub_folder': '',
                                   'variant': '', 'variant_folder': '',
                                   'asset': '', 'asset_folder': ''}
 
-        # Main layout widgets
+        # Main layout widgets.
         main_widget = QtGui.QWidget()
         self. main_layout = QtGui.QHBoxLayout()
         qthelpers.clean_layouts(self.main_layout)
         main_widget.setLayout(self.main_layout)
 
-        # Set the main layout
+        # Set the main layout.
         self.setCentralWidget(main_widget)
 
-        # Setup the variants vbox
+        # Setup the menubar.
+        self.menubar = menubar.QAssetMenus(parent=self)
+
+        # Setup the preferences.
+        self.prefs = prefs.PreferenceHelper()
+        self.prefs.load_config()
+        self.projects_folder = self.prefs.get_attr('project', 'projects_folder')
+        self.default_project = self.prefs.get_attr('project', 'default_project')
+
+        # Settings likely do not exist, create the projects folder.
+        if not self.projects_folder:
+            self.projects_folder = self.menubar.set_projects_folder()
+
+        # Setup the variants vbox.
         self.variants = self._variant_layout()
         self.variants.addWidget(QtGui.QLabel('Projects:'))
         self.projects_combo = QtGui.QComboBox()
@@ -87,7 +94,7 @@ class AssetBoxWindow(QtGui.QMainWindow):
         self.variants.addWidget(QtGui.QLabel('Folders:'))
         self.folder_tree_widget = self._tree_widget(parent=self.variants)
 
-        # Setup the assets vbox
+        # Setup the assets vbox.
         self.assets = self._asset_layout()
         self.breadcrumb = breadcrumb.QBreadcrumb(parent=self)
         self.assets.addWidget(self.breadcrumb)
@@ -100,11 +107,11 @@ class AssetBoxWindow(QtGui.QMainWindow):
         self.actionbuttons = self._buttons_widget(parent=self.assets)
         self.path_line = path_line.QPath(parent=self.assets)
 
-        # Initial population
+        # Initial population.
         self._populate_projects()
         self._populate_variants()
 
-        # Signal for project changes
+        # Signal for project changes.
         self.projects_combo.currentIndexChanged.connect(self._populate_variants)
 
     def selected_asset(self, item):
@@ -172,19 +179,21 @@ class AssetBoxWindow(QtGui.QMainWindow):
                 if not helpers.FolderHelper().is_hidden(helpers.join_path(filepath, p))]
 
     def _populate_projects(self):
-        for p in self.get_projects(PROJECTS_FOLDER):
+        projects = self.get_projects(self.projects_folder)
+        for p in projects:
             self.projects_combo.addItem(p)
 
-        index = self.projects_combo.findText(DEFAULT_PROJECT, QtCore.Qt.MatchFixedString)
-        if index >= 0:
-            self.projects_combo.setCurrentIndex(index)
+        if self.default_project in projects:
+            index = self.projects_combo.findText(self.default_project, QtCore.Qt.MatchFixedString)
+            if index >= 0:
+                self.projects_combo.setCurrentIndex(index)
 
     def _populate_variants(self):
+        self.set_default_project()
         self.folder_tree_widget.clear()
 
         self.current_locations['project'] = self.projects_combo.currentText()
-        self.current_locations['project_folder'] = helpers.join_path(PROJECTS_FOLDER, self.current_locations['project'])
-        self.current_locations['project_pub_folder'] = helpers.join_path(self.current_locations['project_folder'], PUBLISH_FOLDER)
+        self.current_locations['project_folder'] = helpers.join_path(self.projects_folder, self.current_locations['project'])
 
         self.folder_directoy = {}
         root_dir = self.current_locations['project_folder'].rstrip(os.sep)
@@ -279,6 +288,13 @@ class AssetBoxWindow(QtGui.QMainWindow):
 
         return asset_layout
 
+    def set_default_project(self):
+        """Set the default project from current."""
+        project = self.projects_combo.currentText()
+        self.prefs.load_config()
+        self.prefs.set_attr('project', 'default_project', project)
+
     def closeEvent(self, event):
-        self.preferences.config.set('ui', 'view_mode', 'list')
-        self.preferences.save_config()
+        pass
+        # self.prefs.config.set('ui', 'view_mode', 'list')
+        # self.prefs.save_config()
