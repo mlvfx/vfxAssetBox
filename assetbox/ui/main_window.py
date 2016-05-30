@@ -249,16 +249,6 @@ class AssetBoxWindow(QtGui.QMainWindow):
 
         return tree_browser_widget
 
-    def _list_widget(self, parent):
-        list_widget = QtGui.QListWidget()
-        list_widget.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        list_widget.customContextMenuRequested.connect(self.selected_asset_rightclicked)
-        list_widget.itemClicked.connect(self.selected_asset)
-        list_widget.path = ''
-        parent.addWidget(list_widget)
-
-        return list_widget
-
     def _buttons_widget(self, parent):
         button_widget = QtGui.QWidget()
         button_vlayout = QtGui.QHBoxLayout(button_widget)
