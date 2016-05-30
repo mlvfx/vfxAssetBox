@@ -34,8 +34,6 @@ from assetbox.base.assets import Location, Asset
 from assetbox.base import helpers
 from assetbox.base import prefs
 
-DEFAULT_PROJECT = 'EelCreek'
-
 import logging
 
 LOGGER = logging.getLogger(__name__)
