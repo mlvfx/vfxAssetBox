@@ -39,6 +39,26 @@ class FolderHelper(object):
         return result
 
 
+def get_folders(folder):
+    """
+    Passing a folder and return child folders.
+
+    Args:
+        folder (str): path to a folder.
+
+    Returns:
+        list: all matching folders in the folder.
+    """
+    if os.path.isdir(folder):
+        folders = os.listdir(folder)
+
+        return [f for f in folders
+                if not FolderHelper().is_hidden(join_path(folder, f))
+                and os.path.isdir(join_path(folder, f))]
+    else:
+        return []
+
+
 def get_files(folder, pattern='*.abc'):
     """
     Passing a folder and a pattern match, return all files.

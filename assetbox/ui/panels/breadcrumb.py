@@ -10,7 +10,9 @@ except:
 
 
 class QBreadcrumb(QtGui.QWidget):
+    """Primary Breadcrumb widget."""
     def __init__(self, parent=None):
+        """Initialise the widget."""
         super(QBreadcrumb, self).__init__(parent)
         self.parent = parent
         self.layout = QtGui.QHBoxLayout(self)
@@ -36,12 +38,14 @@ class QBreadcrumb(QtGui.QWidget):
             self._add_button()
 
     def _hide_all(self):
+        """Hide all of the buttons."""
         for button in self.buttons:
             button.setVisible(False)
         for divider in self.dividers:
             divider.setVisible(False)
 
     def set_breadcrumb_label(self, *args):
+        """Set the label of the bread crumbs."""
         self.setVisible(True)
         button_activators = [args[-1]]
         parent = args[-1].parent()
@@ -64,10 +68,12 @@ class QBreadcrumb(QtGui.QWidget):
                 # self.buttons[idx].clicked.connect(_partial)
 
     def _select_in_tree(self, button):
-        self.parent.folder_tree_widget.setCurrentItem(button.item)
+        """When selecting a breadcrumb, select it in the treewidget."""
+        self.parent.folder_tree.setCurrentItem(button.item)
         self.parent._populate_assets(button.item)
 
     def _add_button(self):
+        """Add a breadcrumb button widget."""
         button = QtGui.QPushButton('..')
         button.setFlat(True)
         button.setFixedWidth(70)
@@ -79,6 +85,7 @@ class QBreadcrumb(QtGui.QWidget):
         self.buttons.append(button)
 
     def _add_divider(self):
+        """Add a > arrow separator in the widget."""
         divider = QtGui.QLabel('>')
         divider.setFixedWidth(8)
         divider.setVisible(False)

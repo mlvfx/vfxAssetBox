@@ -23,6 +23,8 @@ def filename_input(title='Name Input', outputtext='Text: '):
             if ok and text:
                 output_path = '{0}/{1}'.format(path, text)
                 return func(self, output_path)
+            else:
+                return func(self, False)
         return func_wrapper
     return name_decorate
 

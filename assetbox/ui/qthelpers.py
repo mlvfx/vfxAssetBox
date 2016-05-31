@@ -4,7 +4,7 @@ Helpers related to the Qt interface.
 from PySide import QtCore
 
 
-def clean_layouts(layout):
+def clean_layouts(layout, margin=3):
     """
     Pass in a layout and tidy the margins for the interface.
 
@@ -12,6 +12,5 @@ def clean_layouts(layout):
         layout: QLayout object.
     """
     # Margin size.
-    m = 3
-    layout.setContentsMargins(m, m, m, m)
+    layout.setContentsMargins(margin, margin, margin, margin)
     layout.setAlignment(QtCore.Qt.AlignTop)

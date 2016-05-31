@@ -13,15 +13,14 @@ import os
 from functools import partial
 import time
 
-from PySide import QtCore
 from PySide import QtGui
 
 # import assetbox.ui.contact_sheet as contact_sheet
 # reload(contact_sheet)
 
-from assetbox.ui import breadcrumb
+from assetbox.ui.panels import breadcrumb
 from assetbox.ui.widgets import menubar
-from assetbox.ui.panels import path_line, asset_list
+from assetbox.ui.panels import path_line, asset_list, action_buttons, folder_tree, project_selector
 import assetbox.ui.qthelpers as qthelpers
 reload(breadcrumb)
 
@@ -86,11 +85,11 @@ class AssetBoxWindow(QtGui.QMainWindow):
 
         # Setup the variants vbox.
         self.variants = self._variant_layout()
-        self.variants.addWidget(QtGui.QLabel('Projects:'))
-        self.projects_combo = QtGui.QComboBox()
-        self.variants.addWidget(self.projects_combo)
+        qthelpers.clean_layouts(self.variants)
+        self.projects_combo = project_selector.QProjectCombo(parent=self.variants,
+                                                             project=self.default_project)
         self.variants.addWidget(QtGui.QLabel('Folders:'))
-        self.folder_tree_widget = self._tree_widget(parent=self.variants)
+        self.folder_tree = folder_tree.QFolderTree(parent=self.variants)
 
         # Setup the assets vbox.
         self.assets = self._asset_layout()
@@ -102,15 +101,16 @@ class AssetBoxWindow(QtGui.QMainWindow):
 
         # self.texture_widget = contact_sheet.QdContactSheet()
         # self.assets.addWidget(self.texture_widget)
-        self.actionbuttons = self._buttons_widget(parent=self.assets)
+        self.actionbuttons = action_buttons.QActionButtons(parent=self.assets)
         self.path_line = path_line.QPath(parent=self.assets)
 
         # Initial population.
-        self._populate_projects()
+        self.projects_combo.populate_projects(self.projects_folder)
         self._populate_variants()
 
         # Signal for project changes.
-        self.projects_combo.currentIndexChanged.connect(self._populate_variants)
+        self.projects_combo.combobox().currentIndexChanged.connect(self._populate_variants)
+        self.folder_tree.itemClicked.connect(self._populate_assets)
 
     def selected_asset(self, item):
         """
@@ -154,13 +154,14 @@ class AssetBoxWindow(QtGui.QMainWindow):
     def add_buttons(self):
         valid_actions = [a for a in self.actions if a.actiontype == 2]
         for action in valid_actions:
-            button = QtGui.QPushButton(action.name)
             _partial = partial(self.get_path, action)
-            button.clicked.connect(_partial)
-            self.actionbuttons.addWidget(button)
+            self.actionbuttons.add_button(name=action.name, action=_partial)
 
     def get_path(self, action):
         asset = action.execute(path=self.asset_list.path())
+        if not asset:
+            return False
+
         name = os.path.basename(asset)
         if os.path.isfile(asset):
             asset_obj = Asset(None, name, asset)
@@ -171,33 +172,18 @@ class AssetBoxWindow(QtGui.QMainWindow):
             self.asset_list.add_item(asset_obj)
             self.asset_list.list_widget().scrollToItem(asset_obj)
 
-    def get_projects(self, filepath):
-        projects = os.listdir(filepath)
-        return [p for p in projects
-                if not helpers.FolderHelper().is_hidden(helpers.join_path(filepath, p))]
-
-    def _populate_projects(self):
-        projects = self.get_projects(self.projects_folder)
-        for p in projects:
-            self.projects_combo.addItem(p)
-
-        if self.default_project in projects:
-            index = self.projects_combo.findText(self.default_project, QtCore.Qt.MatchFixedString)
-            if index >= 0:
-                self.projects_combo.setCurrentIndex(index)
-
     def _populate_variants(self):
         self.set_default_project()
-        self.folder_tree_widget.clear()
+        self.folder_tree.clear()
 
-        self.current_locations['project'] = self.projects_combo.currentText()
+        self.current_locations['project'] = self.projects_combo.text()
         self.current_locations['project_folder'] = helpers.join_path(self.projects_folder, self.current_locations['project'])
 
         self.folder_directoy = {}
         root_dir = self.current_locations['project_folder'].rstrip(os.sep)
         start = root_dir.rfind(os.sep) + 1
 
-        parent_item = self.folder_tree_widget
+        parent_item = self.folder_tree
 
         for root, dirnames, filenames in os.walk(root_dir):
             folders = root[start:].split(os.sep)
@@ -206,15 +192,14 @@ class AssetBoxWindow(QtGui.QMainWindow):
                 if not folders[-2] == root_dir:
                     parent_item = self.folder_directoy.get(folders[-2])
                 else:
-                    parent_item = self.folder_tree_widget
+                    parent_item = self.folder_tree
             except IndexError:
-                parent_item = self.folder_tree_widget
+                parent_item = self.folder_tree
 
             if not folders[-1] == root_dir:
                 self.folder_directoy[folders[-1]] = Location(parent=parent_item,
                                                              name=folders[-1],
                                                              path=root)
-            # print self.folder_directoy
 
     def _populate_assets(self, item):
         item.setExpanded(True)
@@ -239,29 +224,11 @@ class AssetBoxWindow(QtGui.QMainWindow):
         images.sort()
         # self.texture_widget.load(images)
 
-    def _tree_widget(self, parent):
-        tree_browser_widget = QtGui.QTreeWidget()
-        tree_browser_widget.itemClicked.connect(self._populate_assets)
-        tree_browser_widget.setHeaderHidden(True)
-        parent.addWidget(tree_browser_widget)
-
-        return tree_browser_widget
-
-    def _buttons_widget(self, parent):
-        button_widget = QtGui.QWidget()
-        button_vlayout = QtGui.QHBoxLayout(button_widget)
-        qthelpers.clean_layouts(button_vlayout)
-        parent.addWidget(button_widget)
-
-        return button_vlayout
-
     def _variant_layout(self):
         variant_widget = QtGui.QWidget()
         variant_widget.setFixedWidth(200)
         variant_vlayout = QtGui.QVBoxLayout(variant_widget)
         qthelpers.clean_layouts(variant_vlayout)
-
-        # create_variant_button = QtGui.QPushButton('Create Variant')
 
         self.main_layout.addWidget(variant_widget)
 
@@ -278,7 +245,7 @@ class AssetBoxWindow(QtGui.QMainWindow):
 
     def set_default_project(self):
         """Set the default project from current."""
-        project = self.projects_combo.currentText()
+        project = self.projects_combo.text()
         self.prefs.load_config()
         self.prefs.set_attr('project', 'default_project', project)
 

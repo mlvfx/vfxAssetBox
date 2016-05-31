@@ -49,7 +49,7 @@ class AbcExportStatic(BaseAction):
             path = os.path.dirname(os.path.abspath(output_path))
             if not os.path.isdir(path):
                 print 'No found file: %s' % path
-                return None
+                return False
 
             selection_command = '-root ' + ' -root '.join(selection)
             file_output = '-file {0}'.format(output_path)
@@ -64,7 +64,7 @@ class AbcExportStatic(BaseAction):
 
             return output_path
         else:
-            return None
+            return False
 
 
 class AbcExport(BaseAction):
