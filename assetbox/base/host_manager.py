@@ -53,7 +53,6 @@ class HostManager(object):
         self.host_filetypes = []
 
         for p in plugins:
-            print p
             try:
                 host_path = os.path.join(p, 'host.py').replace('\\', '/')
                 name, ext = os.path.splitext(host_path)
