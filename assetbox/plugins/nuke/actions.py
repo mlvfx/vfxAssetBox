@@ -19,6 +19,19 @@ class AbcImport(BaseAction):
             print path
 
 
+class ExrImport(BaseAction):
+    """Action to import a exr and create a Nuke Read node."""
+
+    name = 'Exr Import'
+    filetype = 'exr'
+
+    def execute(self, path, **kwargs):
+        """Run the command."""
+        if self.valid_filetype(path):
+            import nuke
+            nuke.nodes.Read(file=str(path))
+
+
 def register_actions(*args):
     """Register all the actions into the host app."""
-    return [AbcImport()]
+    return [AbcImport(), ExrImport()]

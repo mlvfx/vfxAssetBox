@@ -15,12 +15,30 @@ def find_plugins():
     """Query the plugin folder for plugins to load. Yields found locations."""
     plugins_folder = os.path.join(PROJECT_FOLDER, 'plugins').replace('\\', '/')
 
+    def full_path(p):
+        return os.path.join(plugins_folder, p).replace('\\', '/')
+
     if os.path.isdir(plugins_folder):
-        plugins = os.listdir(plugins_folder)
+        plugins = [full_path(p)
+                   for p in os.listdir(plugins_folder)
+                   if os.path.isdir(full_path(p)) and is_plugin(full_path(p))]
 
         if plugins:
             for plugin in plugins:
-                yield os.path.join(plugins_folder, plugin).replace('\\', '/')
+                yield plugin
+
+
+def is_plugin(plugin):
+    """
+    Query whether the plugin has required files. Plugin folder must have
+    actions and host files.
+
+    Args:
+        plugin (str): path to a plugin folder.
+    """
+    files = os.listdir(plugin)
+    plugin_files = set(['actions.py', 'host.py'])
+    return plugin_files.issubset(set(files))
 
 
 class HostManager(object):
@@ -35,6 +53,7 @@ class HostManager(object):
         self.host_filetypes = []
 
         for p in plugins:
+            print p
             try:
                 host_path = os.path.join(p, 'host.py').replace('\\', '/')
                 name, ext = os.path.splitext(host_path)
@@ -55,10 +74,10 @@ class HostManager(object):
                         print 'HostManager:IOError -- No actions found'
 
             except IOError, ioe:
-                print 'HostManager:IOError -- ', ioe
+                print 'HostManager:IOError -- ', ioe, p
 
             except ImportError, ime:
-                print 'HostManager:ImportError -- ', ime
+                print 'HostManager:ImportError -- ', ime, p
 
     def get_hostapp(self):
         """Return the host application."""
